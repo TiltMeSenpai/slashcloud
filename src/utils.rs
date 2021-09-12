@@ -2,7 +2,7 @@ use cfg_if::cfg_if;
 use web_sys::ServiceWorkerGlobalScope;
 use wasm_bindgen::JsCast;
 use worker::wasm_bindgen_futures::JsFuture;
-use js_sys::{Uint8Array,JsString};
+use js_sys::Uint8Array;
 use worker::console_log;
 use std::num::ParseIntError;
 
