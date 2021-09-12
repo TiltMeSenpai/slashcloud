@@ -67,10 +67,6 @@ impl JsCtx {
         Ok(key)
     }
     pub async fn verify_request(&self, key: &web_sys::CryptoKey, req: &worker::Request, body: Vec<u8>) -> Result<(), &str>{
-        // We use `unsafe` twice here to convert Rust side slices into JS side Uint8 arrays.
-        // This is safe because these Uint8 arrays are only used to verify signatures within this function.
-        // We do not modify the arrays between creating them and verifying the signatures, and the arrays are not passed
-        //   outside of this function.
         let headers = req.headers();
         let sig = match headers.get("x-signature-ed25519").unwrap() {
             Some(hdr) => {
