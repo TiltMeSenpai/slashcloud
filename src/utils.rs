@@ -94,8 +94,6 @@ impl JsCtx {
             },
             None => return Err("Missing timestamp header")
         };
-        console_log!("Sig: {:?}", sig.to_vec());
-        console_log!("Data: {:?}", data.to_vec());
         match self.get_crypto().verify_with_object_and_buffer_source_and_buffer_source(
             &js_sys::JSON::parse(r#"{"name":"NODE-ED25519", "namedCurve": "NODE-ED25519"}"#).unwrap().dyn_into().unwrap(),
             key,
