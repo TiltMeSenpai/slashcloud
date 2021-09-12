@@ -4,10 +4,17 @@ use wasm_bindgen::JsCast;
 use worker::wasm_bindgen_futures::JsFuture;
 use js_sys::{Uint8Array,JsString};
 use worker::console_log;
-use std::convert::TryInto;
+use std::num::ParseIntError;
 
 pub struct JsCtx {
     ctx: ServiceWorkerGlobalScope
+}
+
+pub fn decode_hex(s: &str) -> Result<Vec<u8>, ParseIntError> {
+    (0..s.len())
+        .step_by(2)
+        .map(|i| u8::from_str_radix(&s[i..i + 2], 16))
+        .collect()
 }
 
 impl JsCtx {
@@ -59,8 +66,40 @@ impl JsCtx {
         };
         Ok(key)
     }
-
-    async fn verify_buffer(&self, key: &web_sys::CryptoKey, sig: Uint8Array, data: Uint8Array) -> Result<(), &str>{
+    pub async fn verify_request(&self, key: &web_sys::CryptoKey, req: &worker::Request, body: Vec<u8>) -> Result<(), &str>{
+        // We use `unsafe` twice here to convert Rust side slices into JS side Uint8 arrays.
+        // This is safe because these Uint8 arrays are only used to verify signatures within this function.
+        // We do not modify the arrays between creating them and verifying the signatures, and the arrays are not passed
+        //   outside of this function.
+        let headers = req.headers();
+        let sig = match headers.get("x-signature-ed25519").unwrap() {
+            Some(hdr) => {
+                match decode_hex(&hdr) {
+                    Ok(sig)  =>
+                        {
+                            let buf = Uint8Array::new_with_length(sig.len() as u32);
+                            buf.copy_from(&sig);
+                            buf
+                        }
+                    Err(msg) => {
+                        console_log!("Failed to parse sig: {:?}", msg);
+                        return Err("Failed to parse sig")
+                    }
+                }
+            },
+            None => return Err("Missing signature header")
+        };
+        let data = match headers.get("x-signature-timestamp").unwrap() {
+            Some(hdr) => {
+                let data = [hdr.as_bytes(), &body].concat();
+                let buf = Uint8Array::new_with_length(data.len() as u32);
+                buf.copy_from(&data);
+                buf
+            },
+            None => return Err("Missing timestamp header")
+        };
+        console_log!("Sig: {:?}", sig.to_vec());
+        console_log!("Data: {:?}", data.to_vec());
         match self.get_crypto().verify_with_object_and_buffer_source_and_buffer_source(
             &js_sys::JSON::parse(r#"{"name":"NODE-ED25519", "namedCurve": "NODE-ED25519"}"#).unwrap().dyn_into().unwrap(),
             key,
@@ -68,9 +107,9 @@ impl JsCtx {
             &data,
         ){ 
             Ok(promise) => match JsFuture::from(promise).await {
-                Ok(res) => match res.as_bool().unwrap_or(false){
+                Ok(res) => match res.as_bool().unwrap(){
                     true  => Ok(()),
-                    false => Err("Signature mismatch")
+                    false => Err("Signature Mismatch")
                 },
                 Err(err) => {
                     console_log!("Error verifying: {:?}", err);
@@ -83,32 +122,6 @@ impl JsCtx {
             }
 
         }
-    }
-
-    pub async fn verify_request(&self, key: &web_sys::CryptoKey, req: &worker::Request, body: String) -> Result<(), &str>{
-        let headers = req.headers();
-        let sig = match headers.get("X-Signature-Ed25519").unwrap() {
-            Some(hdr) => {
-                match hex::decode(hdr) {
-                    Ok(sig)  => unsafe { Uint8Array::view(&sig) }
-                    Err(msg) => {
-                        console_log!("Failed to parse sig: {:?}", msg);
-                        return Err("Failed to parse sig")
-                    }
-                }
-            },
-            None => return Err("Missing signature header")
-        };
-        console_log!("Signature len: {:?}", sig.length());
-        let data = match headers.get("X-Signature-Timestamp").unwrap() {
-            Some(mut hdr) => {
-                hdr.push_str(&body);
-                unsafe { Uint8Array::view(hdr.as_bytes())}
-            },
-            None => return Err("Missing timestamp header")
-        };
-        console_log!("Calling verify");
-        self.verify_buffer(key, sig, data).await
     }
 }
 

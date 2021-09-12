@@ -1,1 +1,1 @@
-mod interactions;
+pub mod interactions;

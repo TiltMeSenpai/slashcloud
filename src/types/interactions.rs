@@ -18,7 +18,6 @@ impl Serialize for InteractionResponse {
         match self {
             InteractionResponse::Pong => {
                 s.serialize_field("type", &1)?;
-                s.serialize_field("data", &false)?;
             },
             InteractionResponse::ChannelMessage{deferred: false, body} => {
                 s.serialize_field("type", &4)?;
