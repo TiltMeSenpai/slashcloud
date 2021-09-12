@@ -18,17 +18,17 @@ pub enum ButtonStyle {
 #[derive(Serialize)]
 pub struct ButtonEmoji{
     name: String,
-    id: u64,
+    id: String,
     animated: bool
 }
 
 #[derive(Serialize)]
 pub struct SelectOptions{
-    label: String,
-    value: String,
-    descritpion: Option<String>,
-    emoji: Option<ButtonEmoji>,
-    default: Option<bool>
+    pub label: String,
+    pub value: String,
+    pub descritpion: Option<String>,
+    pub emoji: Option<ButtonEmoji>,
+    pub default: Option<bool>
 }
 
 #[allow(dead_code)]
@@ -123,11 +123,11 @@ pub struct DiscordEmbed;
 
 #[derive(Serialize)]
 pub struct InteractionResponseBody {
-    tts: Option<bool>,
-    content: Option<String>,
-    embeds: Option<Vec<DiscordEmbed>>,
-    flags: Option<u8>,
-    components: Option<Vec<DiscordComponent>>
+    pub tts: Option<bool>,
+    pub content: Option<String>,
+    pub embeds: Option<Vec<DiscordEmbed>>,
+    pub flags: Option<u8>,
+    pub components: Option<Vec<DiscordComponent>>
 }
 
 #[allow(dead_code)]
@@ -167,7 +167,7 @@ impl Serialize for InteractionResponse {
     }
 }
 
-#[derive(Deserialize_repr)]
+#[derive(Deserialize_repr,Debug)]
 #[repr(u8)]
 pub enum InteractionRequestType {
     Ping = 1,
@@ -176,17 +176,17 @@ pub enum InteractionRequestType {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize)]
+#[derive(Deserialize,Debug)]
 pub struct InteractionRequest {
     #[serde(rename="type")]
-    t: InteractionRequestType,
-    id: u64,
-    application_id: Option<u64>,
-    guild_id: Option<u64>,
-    channel_id: Option<u64>,
+    pub t: InteractionRequestType,
+    pub id: String,
+    pub application_id: Option<String>,
+    pub guild_id: Option<String>,
+    pub channel_id: Option<String>,
     #[serde(alias="member")]
-    user: Option<Value>,
-    data: Option<Value>,
-    token: String,
-    message: Option<Value>
+    pub user: Option<Value>,
+    pub data: Option<Value>,
+    pub token: String,
+    pub message: Option<Value>
 }

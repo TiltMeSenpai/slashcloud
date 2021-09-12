@@ -66,7 +66,7 @@ impl JsCtx {
         };
         Ok(key)
     }
-    pub async fn verify_request(&self, key: &web_sys::CryptoKey, req: &worker::Request, body: Vec<u8>) -> Result<(), &str>{
+    pub async fn verify_request(&self, key: &web_sys::CryptoKey, req: &worker::Request, body: &[u8]) -> Result<(), &str>{
         let headers = req.headers();
         let sig = match headers.get("x-signature-ed25519").unwrap() {
             Some(hdr) => {
