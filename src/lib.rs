@@ -6,8 +6,7 @@ mod types;
 
 use types::interactions::*;
 
-#[event(fetch)]
-pub async fn main(mut req: Request, env: Env) -> Result<Response> {
+pub async fn handle(mut req: Request, env: Env) -> Result<Response> {
     let body = req.text().await.unwrap();
     let ctx = utils::JsCtx::new();
     let key = match ctx.get_key(&env).await{
