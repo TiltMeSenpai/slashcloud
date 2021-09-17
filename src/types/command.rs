@@ -5,7 +5,7 @@ use crate::types::interactions::*;
 pub use macros::CommandOption;
 
 pub trait CommandOption: Sized {
-    fn from_value(options: Value) -> Option<Self>;
+    fn from_value(options: &Value) -> Option<Self>;
     #[cfg(any(feature = "keep_json", not(target_arch = "wasm32")))]
     fn to_value() -> Value;
 }

@@ -54,7 +54,7 @@ fn code_for_ident(ident: &Ident) -> ParsedCommandType {
 #[derive(Debug)]
 struct ParsedCommandOption {
     t_code: ParsedCommandType,
-    t: String,
+    t: Ident,
     name: Ident,
     description: String,
     required: bool,
@@ -85,6 +85,29 @@ impl ParsedCommandOption {
                 #option_quote
             }
         )
+    }
+
+    fn from_json_quote(&self, name: proc_macro2::TokenStream) -> proc_macro2::TokenStream {
+        let idx = &self.name.to_string().to_snake_case();
+        if let ParsedCommandExtras::OptionsReal(options) = &self.options {
+            let param_quotes = options.iter().map(|option| {
+                let name_str = &option.name.to_string();
+                let name = &option.name;
+                let cast = cast_quote(&option.t, quote!(args.get(#name_str)), option.required);
+                quote!(#name: #cast)
+            });
+            let name = &self.name;
+            let t = &self.t;
+            quote!{
+                #idx => {
+                    Some( #t::#name {
+                            #(#param_quotes),*
+                        })
+                }
+            }
+         } else {
+            cast_quote(&self.t, quote!(#name[idx]), self.required)
+        }
     }
 }
 
@@ -119,6 +142,23 @@ fn attr_is_enum(attrs: &Vec<Attribute>) -> bool {
     })
 }
 
+fn cast_quote(t: &Ident, value_name: proc_macro2::TokenStream, required: bool) -> proc_macro2::TokenStream {
+    let type_name: &str = &t.to_string();
+    let q = match type_name {
+        "String" => quote!(#value_name.map(|val| val.as_str()).map(|val| val.to_string())),
+        "bool"   => quote!(#value_name.map(|val| val.as_bool())),
+        "f64"    => quote!(#value_name.map(|val| val.as_f64())),
+        "u64"    => quote!(#value_name.map(|val| val.as_u64())),
+        "i64"    => quote!(#value_name.map(|val| val.as_i64())),
+        _ => quote!(#value_name.map(|val| #t::from_value(val)))
+    };
+    if required {
+        quote!(#q?)
+    } else {
+        q
+    }
+}
+
 use std::iter::repeat;
 #[proc_macro_derive(CommandOption, attributes(description,command_enum))]
 pub fn command_handler_derive(input: TokenStream) -> TokenStream {
@@ -147,7 +187,7 @@ pub fn command_handler_derive(input: TokenStream) -> TokenStream {
         let description_stream = parsed_enum.to_owned().map(|item| item.description);
         quote!{
             impl CommandOption for #name {
-                fn from_value(option: serde_json::Value) -> Option<Self>{
+                fn from_value(option: &serde_json::Value) -> Option<Self>{
                     if let Some(o) = option.as_str() {
                         match o {
                             #( #value_stream => Some(#name_r::#ident_stream), )*
@@ -203,7 +243,7 @@ pub fn command_handler_derive(input: TokenStream) -> TokenStream {
                     };
                     ParsedCommandOption{
                         t_code: code,
-                        t: ty.to_string(),
+                        t: ty,
                         name: field.ident.as_ref().expect("Only named fields (struct style enums) supported").to_owned(),
                         description: desc,
                         required: required,
@@ -215,17 +255,27 @@ pub fn command_handler_derive(input: TokenStream) -> TokenStream {
             }).collect();
             ParsedCommandOption{
                 t_code: ParsedCommandType::SubCommand,
-                t: variant.ident.to_string(),
+                t: name.to_owned(),
                 name: variant.ident.to_owned(),
                 description: desc,
                 required: true,
                 options: ParsedCommandExtras::OptionsReal(args)}
         });
         let to_value_quotes = parsed_option.to_owned().map(|option| option.to_json_quote());
+        let from_json_quotes = parsed_option.to_owned().map(|option| option.from_json_quote(quote!(options)));
+        println!("Options: {:#?}", parsed_option.collect::<Vec<ParsedCommandOption>>());
         quote!{
             impl CommandOption for #name {
-                fn from_value(options: serde_json::Value) -> Option<Self>{
-                    None
+                fn from_value(options: &serde_json::Value) -> Option<Self>{
+                    let args = std::collections::HashMap::<&str, &serde_json::Value, std::collections::hash_map::RandomState>::from_iter(
+                        options.get("options")?
+                        .as_array()?
+                        .iter().map(|option| (option["name"].as_str().unwrap(), &option["value"])));
+
+                    match options["name"].as_str().unwrap() {
+                        #(#from_json_quotes),*
+                        _ => None
+                    }
                 }
 
                 #[cfg(any(feature = "keep_json", not(target_arch = "wasm32")))]
@@ -237,6 +287,6 @@ pub fn command_handler_derive(input: TokenStream) -> TokenStream {
             }
         }
     };
-    println!("gen: {}", gen);
+    println!("{}", gen.to_string());
     gen.into()
 }

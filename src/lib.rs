@@ -13,6 +13,7 @@ pub use types::*;
 extern crate macros;
 
 pub use serde_json::json;
+pub use std::iter::FromIterator;
 
 pub async fn handle_request<T>(mut req: Request, env: Env) -> Result<Response> where T: CommandOption + CommandHandler {
     let body = req.text().await.unwrap();
@@ -36,7 +37,7 @@ pub async fn handle_request<T>(mut req: Request, env: Env) -> Result<Response> w
                 InteractionRequest{t: InteractionRequestType::Ping, ..} => worker::Response::from_json(&InteractionResponse::Pong),
                 req @ InteractionRequest{t: InteractionRequestType::ApplicationCommand, ..} => {
                     match req.data.to_owned() {
-                        Some(arg_val) => match T::from_value(arg_val) {
+                        Some(arg_val) => match T::from_value(&arg_val) {
                             Some(args) => worker::Response::from_json(&T::handle(args, req)),
                             None => worker::Response::error("Could not deserialize args", 400)
                         },
