@@ -167,8 +167,8 @@ impl Serialize for InteractionResponse {
     }
 }
 
-#[derive(Deserialize_repr,Debug)]
 #[repr(u8)]
+#[derive(Deserialize_repr,Debug,Clone)]
 pub enum InteractionRequestType {
     Ping = 1,
     ApplicationCommand = 2,
@@ -176,7 +176,7 @@ pub enum InteractionRequestType {
 }
 
 #[allow(dead_code)]
-#[derive(Deserialize,Debug)]
+#[derive(Deserialize,Debug,Clone)]
 pub struct InteractionRequest {
     #[serde(rename="type")]
     pub t: InteractionRequestType,

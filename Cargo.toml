@@ -1,5 +1,5 @@
 [package]
-name = "discord-wasm"
+name = "cloudflare-slash"
 version = "0.1.0"
 authors = ["Josh Koike <jk@tilting.me>"]
 edition = "2018"
@@ -9,6 +9,8 @@ crate-type = ["cdylib", "rlib"]
 
 [features]
 default = ["console_error_panic_hook"]
+# Keep command to json in wasm targets (Normally removed for binary size)
+keep_json = []
 
 [dependencies]
 cfg-if = "0.1.2"
@@ -31,6 +33,8 @@ js-sys = "0.3.*"
 wasm-bindgen = "^0.2.76"
 hex = "0.4.3"
 serde_repr = "0.1"
+
+macros = {path = "macros"}
 
 [dependencies.web-sys]
 version = "0.3.*"

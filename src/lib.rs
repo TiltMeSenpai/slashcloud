@@ -1,12 +1,20 @@
 use worker::*;
 use serde_json::from_str;
 
+use types::interactions::*;
+use types::command::*;
+
 mod utils;
 mod types;
+pub use types::*;
 
-use types::interactions::*;
+#[macro_use]
+#[allow(unused_imports)]
+extern crate macros;
 
-pub async fn handle(mut req: Request, env: Env) -> Result<Response> {
+pub use serde_json::json;
+
+pub async fn handle_request<T>(mut req: Request, env: Env) -> Result<Response> where T: CommandOption + CommandHandler {
     let body = req.text().await.unwrap();
     let ctx = utils::JsCtx::new();
     let key = match ctx.get_key(&env).await{
@@ -26,6 +34,15 @@ pub async fn handle(mut req: Request, env: Env) -> Result<Response> {
             console_log!("Payload: {:?}", json);
             match json {
                 InteractionRequest{t: InteractionRequestType::Ping, ..} => worker::Response::from_json(&InteractionResponse::Pong),
+                req @ InteractionRequest{t: InteractionRequestType::ApplicationCommand, ..} => {
+                    match req.data.to_owned() {
+                        Some(arg_val) => match T::from_value(arg_val) {
+                            Some(args) => worker::Response::from_json(&T::handle(args, req)),
+                            None => worker::Response::error("Could not deserialize args", 400)
+                        },
+                        None => worker::Response::error("Missing args", 400)
+                    }
+                }
                 _ => worker::Response::error("Request type not recognized", 404)
             }
         }
