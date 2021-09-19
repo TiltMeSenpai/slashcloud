@@ -1,6 +1,7 @@
 use worker::*;
 use serde_json::from_str;
 
+use types::command::*;
 use types::interactions::*;
 
 mod utils;
@@ -11,7 +12,8 @@ pub use types::*;
 #[allow(unused_imports)]
 extern crate macros;
 
-pub use types::command::*;
+pub use command::*;
+pub use interactions::*;
 pub use serde_json::json;
 pub use std::iter::FromIterator;
 
