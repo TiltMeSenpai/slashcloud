@@ -287,6 +287,5 @@ pub fn command_handler_derive(input: TokenStream) -> TokenStream {
             }
         }
     };
-    println!("{}", gen.to_string());
     gen.into()
 }
