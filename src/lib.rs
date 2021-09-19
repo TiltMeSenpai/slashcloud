@@ -17,6 +17,7 @@ pub use interactions::*;
 pub use serde_json::json;
 pub use std::iter::FromIterator;
 
+#[cfg(not(target_arch = "wasm32"))]
 pub fn gen_command_json<T>() where T: CommandOption {
     use std::fs::*;
     let _dir = create_dir("commands");
