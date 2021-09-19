@@ -146,10 +146,10 @@ fn cast_quote(t: &Ident, value_name: proc_macro2::TokenStream, required: bool) -
     let type_name: &str = &t.to_string();
     let q = match type_name {
         "String" => quote!(#value_name.map(|val| val.as_str()).flatten().map(|val| val.to_string())),
-        "bool"   => quote!(#value_name.map(|val| val.as_bool())),
-        "f64"    => quote!(#value_name.map(|val| val.as_f64())),
-        "u64"    => quote!(#value_name.map(|val| val.as_u64())),
-        "i64"    => quote!(#value_name.map(|val| val.as_i64())),
+        "bool"   => quote!(#value_name.map(|val| val.as_bool()).flatten()),
+        "f64"    => quote!(#value_name.map(|val| val.as_f64()).flatten()),
+        "u64"    => quote!(#value_name.map(|val| val.as_u64()).flatten()),
+        "i64"    => quote!(#value_name.map(|val| val.as_i64()).flatten()),
         _ => quote!(#value_name.map(|val| #t::from_value(val)))
     };
     if required {
