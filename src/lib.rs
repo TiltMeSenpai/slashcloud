@@ -40,7 +40,7 @@ pub async fn handle_request<T>(mut req: Request, env: Env) -> Result<Response> w
                 req @ InteractionRequest{t: InteractionRequestType::ApplicationCommand, ..} => {
                     match req.data.to_owned() {
                         Some(arg_val) => match T::from_value(&arg_val) {
-                            Some(args) => worker::Response::from_json(&T::handle(args, req)),
+                            Some(args) => worker::Response::from_json(args.handle(req)),
                             None => worker::Response::error("Could not deserialize args", 400)
                         },
                         None => worker::Response::error("Missing args", 400)
