@@ -263,7 +263,6 @@ pub fn command_handler_derive(input: TokenStream) -> TokenStream {
         });
         let to_value_quotes = parsed_option.to_owned().map(|option| option.to_json_quote());
         let from_json_quotes = parsed_option.to_owned().map(|option| option.from_json_quote(quote!(options)));
-        println!("Options: {:#?}", parsed_option.collect::<Vec<ParsedCommandOption>>());
         quote!{
             impl CommandOption for #name {
                 fn from_value(options: &serde_json::Value) -> Option<Self>{
