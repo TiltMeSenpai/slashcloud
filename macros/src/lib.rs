@@ -145,7 +145,7 @@ fn attr_is_enum(attrs: &Vec<Attribute>) -> bool {
 fn cast_quote(t: &Ident, value_name: proc_macro2::TokenStream, required: bool) -> proc_macro2::TokenStream {
     let type_name: &str = &t.to_string();
     let q = match type_name {
-        "String" => quote!(#value_name.map(|val| val.as_str()).map(|val| val.to_string())),
+        "String" => quote!(#value_name.map(|val| val.as_str()).flatten().map(|val| val.to_string())),
         "bool"   => quote!(#value_name.map(|val| val.as_bool())),
         "f64"    => quote!(#value_name.map(|val| val.as_f64())),
         "u64"    => quote!(#value_name.map(|val| val.as_u64())),
