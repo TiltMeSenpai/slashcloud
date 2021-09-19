@@ -40,7 +40,7 @@ enum ExampleSubCommand{
 
 
 impl command::CommandHandler for ExampleCommand {
-    fn handle(args: Self, req: interactions::InteractionRequest) -> interactions::InteractionResponse{
+    fn handle(&self, req: interactions::InteractionRequest) -> interactions::InteractionResponse{
         interactions::InteractionResponse::Pong
     }
 }
