@@ -12,6 +12,7 @@ pub use types::*;
 #[allow(unused_imports)]
 extern crate macros;
 
+pub use crate::command::CommandOption;
 pub use serde_json::json;
 pub use std::iter::FromIterator;
 
