@@ -11,5 +11,5 @@ pub trait CommandOption: Sized {
 }
 
 pub trait CommandHandler {
-    fn handle(options: Self, req: InteractionRequest) -> InteractionResponse;
+    fn handle(&self, req: InteractionRequest) -> InteractionResponse;
 }
