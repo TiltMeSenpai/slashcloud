@@ -17,6 +17,16 @@ pub use interactions::*;
 pub use serde_json::json;
 pub use std::iter::FromIterator;
 
+pub fn gen_command_json<T>() where T: CommandOption {
+    use std::fs::*;
+    let _dir = create_dir("commands");
+    T::to_value().as_array().unwrap().iter().for_each(|command| {
+        let name = format!("commands/{}", command["name"].as_str().unwrap());
+        println!("Writing {}", name);
+        let _f = write(name, serde_json::to_vec(command).unwrap());
+    })
+}
+
 pub async fn handle_request<T>(mut req: Request, env: Env) -> Result<Response> where T: CommandOption + CommandHandler {
     let body = req.text().await.unwrap();
     let ctx = utils::JsCtx::new();
