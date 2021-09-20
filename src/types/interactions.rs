@@ -152,8 +152,8 @@ impl InteractionResponse {
         }
     }
 
-    pub fn set_tts(&mut self, val: bool) -> &mut Self{
-        match self {
+    pub fn set_tts(mut self, val: bool) -> Self {
+        match &mut self {
             InteractionResponse::Pong => (),
             InteractionResponse::ChannelMessage{body, ..} |
             InteractionResponse::UpdateMessage{body, ..} => body.tts = Some(val)
@@ -161,8 +161,8 @@ impl InteractionResponse {
         self
     }
 
-    pub fn set_content(&mut self, val: String) -> &mut Self{
-        match self {
+    pub fn set_content(mut self, val: String) -> Self {
+        match &mut self {
             InteractionResponse::Pong => (),
             InteractionResponse::ChannelMessage{body, ..} |
             InteractionResponse::UpdateMessage{body, ..} => body.content = Some(val)
@@ -170,8 +170,8 @@ impl InteractionResponse {
         self
     }
 
-    pub fn set_embeds(&mut self, val: Vec<DiscordEmbed>) -> &mut Self {
-        match self {
+    pub fn set_embeds(mut self, val: Vec<DiscordEmbed>) -> Self {
+        match &mut self {
             InteractionResponse::Pong => (),
             InteractionResponse::ChannelMessage{body, ..} |
             InteractionResponse::UpdateMessage{body, ..} => body.embeds = Some(val)
@@ -179,8 +179,8 @@ impl InteractionResponse {
         self
     }
 
-    pub fn set_flag(&mut self, flag: u8) -> &mut Self {
-        match self {
+    pub fn set_flag(mut self, flag: u8) -> Self {
+        match &mut self {
             InteractionResponse::Pong => (),
             InteractionResponse::ChannelMessage{body, ..} |
             InteractionResponse::UpdateMessage{body, ..} => match body.flags {
@@ -191,8 +191,8 @@ impl InteractionResponse {
         self
     }
 
-    pub fn add_component(&mut self, val: Vec<DiscordComponent>) -> &mut Self {
-        match self {
+    pub fn add_component(mut self, val: Vec<DiscordComponent>) -> Self {
+        match &mut self {
             InteractionResponse::Pong => (),
             InteractionResponse::ChannelMessage{body, ..} |
             InteractionResponse::UpdateMessage{body, ..} => body.components = Some(val)
