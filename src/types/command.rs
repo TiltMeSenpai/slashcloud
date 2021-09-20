@@ -20,6 +20,6 @@ pub trait InteractionHandler {
 
 impl <T> InteractionHandler for T {
     fn handle_request(&self, _req: InteractionRequest) -> InteractionResponse {
-        InteractionResponse::UpdateMessage{deferred: true, body: InteractionResponseBody{..Default::default()}}
+        InteractionResponse::update()
     }
 }
