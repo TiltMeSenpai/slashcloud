@@ -150,7 +150,7 @@ fn cast_quote(t: &Ident, value_name: proc_macro2::TokenStream, required: bool) -
         "f64"    => quote!(#value_name.map(|val| val.as_f64()).flatten()),
         "u64"    => quote!(#value_name.map(|val| val.as_u64()).flatten()),
         "i64"    => quote!(#value_name.map(|val| val.as_i64()).flatten()),
-        _ => quote!(#value_name.map(|val| #t::from_value(val)))
+        _ => quote!(#value_name.map(|val| #t::from_value(val)).flatten())
     };
     if required {
         quote!(#q?)
