@@ -170,11 +170,14 @@ impl InteractionResponse {
         self
     }
 
-    pub fn set_embeds(mut self, val: Vec<DiscordEmbed>) -> Self {
+    pub fn add_embed(mut self, val: DiscordEmbed) -> Self {
         match &mut self {
             InteractionResponse::Pong => (),
             InteractionResponse::ChannelMessage{body, ..} |
-            InteractionResponse::UpdateMessage{body, ..} => body.embeds = Some(val)
+            InteractionResponse::UpdateMessage{body, ..} => match &mut body.embeds {
+                Some(embeds) => embeds.push(val),
+                None => body.embeds = Some(vec!(val))
+            }
         }
         self
     }
@@ -191,11 +194,14 @@ impl InteractionResponse {
         self
     }
 
-    pub fn add_component(mut self, val: Vec<DiscordComponent>) -> Self {
+    pub fn add_component(mut self, val: DiscordComponent) -> Self {
         match &mut self {
             InteractionResponse::Pong => (),
             InteractionResponse::ChannelMessage{body, ..} |
-            InteractionResponse::UpdateMessage{body, ..} => body.components = Some(val)
+            InteractionResponse::UpdateMessage{body, ..} => match &mut body.components {
+                Some(components) => components.push(val),
+                None => body.components = Some(vec!(val))
+            }
         }
         self
     }
