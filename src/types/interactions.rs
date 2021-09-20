@@ -137,6 +137,70 @@ pub enum InteractionResponse {
     UpdateMessage  { deferred: bool, body: InteractionResponseBody }
 }
 
+impl InteractionResponse {
+    pub fn message() -> Self{
+        InteractionResponse::ChannelMessage {
+            deferred: false,
+            body: InteractionResponseBody{..Default::default()}
+        }
+    }
+
+    pub fn update() -> Self {
+        InteractionResponse::UpdateMessage {
+            deferred: false,
+            body: InteractionResponseBody{..Default::default()}
+        }
+    }
+
+    pub fn set_tts(&mut self, val: bool) -> &mut Self{
+        match self {
+            InteractionResponse::Pong => (),
+            InteractionResponse::ChannelMessage{body, ..} |
+            InteractionResponse::UpdateMessage{body, ..} => body.tts = Some(val)
+        }
+        self
+    }
+
+    pub fn set_content(&mut self, val: String) -> &mut Self{
+        match self {
+            InteractionResponse::Pong => (),
+            InteractionResponse::ChannelMessage{body, ..} |
+            InteractionResponse::UpdateMessage{body, ..} => body.content = Some(val)
+        }
+        self
+    }
+
+    pub fn set_embeds(&mut self, val: Vec<DiscordEmbed>) -> &mut Self {
+        match self {
+            InteractionResponse::Pong => (),
+            InteractionResponse::ChannelMessage{body, ..} |
+            InteractionResponse::UpdateMessage{body, ..} => body.embeds = Some(val)
+        }
+        self
+    }
+
+    pub fn set_flag(&mut self, flag: u8) -> &mut Self {
+        match self {
+            InteractionResponse::Pong => (),
+            InteractionResponse::ChannelMessage{body, ..} |
+            InteractionResponse::UpdateMessage{body, ..} => match body.flags {
+                Some(flags) => body.flags = Some(flags | 1 << flag),
+                None => body.flags = Some(1 << flag)
+            }
+        }
+        self
+    }
+
+    pub fn add_component(&mut self, val: Vec<DiscordComponent>) -> &mut Self {
+        match self {
+            InteractionResponse::Pong => (),
+            InteractionResponse::ChannelMessage{body, ..} |
+            InteractionResponse::UpdateMessage{body, ..} => body.components = Some(val)
+        }
+        self
+    }
+}
+
 
 impl Serialize for InteractionResponse {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
