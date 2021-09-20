@@ -1,7 +1,9 @@
 use worker::*;
 use serde_json::from_str;
 
+#[allow(unused_imports)]
 use types::command::*;
+#[allow(unused_imports)]
 use types::interactions::*;
 
 mod utils;
@@ -28,7 +30,7 @@ pub fn gen_command_json<T>() where T: CommandOption {
     })
 }
 
-pub async fn handle_request<T>(mut req: Request, env: Env) -> Result<Response> where T: CommandOption + CommandHandler {
+pub async fn handle_request<T>(mut req: Request, env: Env) -> Result<Response> where T: CommandOption + CommandHandler + InteractionHandler {
     let body = req.text().await.unwrap();
     let ctx = utils::JsCtx::new();
     let key = match ctx.get_key(&env).await{

@@ -13,3 +13,13 @@ pub trait CommandOption: Sized {
 pub trait CommandHandler {
     fn handle(&self, req: InteractionRequest) -> InteractionResponse;
 }
+
+pub trait InteractionHandler {
+    fn handle_request(&self, req: InteractionRequest) -> InteractionResponse;
+}
+
+impl <T> InteractionHandler for T {
+    fn handle_request(&self, _req: InteractionRequest) -> InteractionResponse {
+        InteractionResponse::UpdateMessage{deferred: true, body: InteractionResponseBody{..Default::default()}}
+    }
+}

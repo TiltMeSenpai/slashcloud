@@ -121,7 +121,7 @@ impl Serialize for DiscordComponent {
 #[derive(Serialize)]
 pub struct DiscordEmbed;
 
-#[derive(Serialize)]
+#[derive(Serialize, Default)]
 pub struct InteractionResponseBody {
     pub tts: Option<bool>,
     pub content: Option<String>,
