@@ -1,5 +1,5 @@
 [package]
-name = "cloudflare-slash"
+name = "slashcloud"
 version = "0.1.0"
 authors = ["Josh Koike <jk@tilting.me>"]
 edition = "2018"
