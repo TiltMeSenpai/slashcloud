@@ -1,6 +1,6 @@
-use cloudflare_slash::*;
+use slashcloud::*;
 use worker::*;
-use cloudflare_slash::command::CommandOption;
+use slashcloud::command::CommandOption;
 
 #[derive(CommandOption)]
 #[command_enum]
@@ -47,7 +47,7 @@ impl command::CommandHandler for ExampleCommand {
 
 #[event(fetch)]
 pub async fn handle_req(req: Request, env: Env) -> Result<Response> {
-    cloudflare_slash::handle_request::<ExampleCommand>(req, env).await
+    slashcloud::handle_request::<ExampleCommand>(req, env).await
 }
 
 #[cfg(not(target_arch="wasm32"))]
