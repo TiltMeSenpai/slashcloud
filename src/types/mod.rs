@@ -1,2 +1,2 @@
-pub mod interactions;
 pub mod command;
+pub mod interactions;

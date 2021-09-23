@@ -18,7 +18,7 @@ pub trait InteractionHandler {
     fn handle_request(&self, req: InteractionRequest) -> InteractionResponse;
 }
 
-impl <T> InteractionHandler for T {
+impl<T> InteractionHandler for T {
     fn handle_request(&self, _req: InteractionRequest) -> InteractionResponse {
         InteractionResponse::update()
     }
