@@ -8,9 +8,11 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = []
+default = ["limiter"]
 # Keep command to json in wasm targets (Normally removed for binary size)
 keep_json = []
+discord = []
+limiter = []
 
 [dependencies]
 worker = "^0.0.6"
@@ -20,6 +22,9 @@ js-sys = "0.3.*"
 wasm-bindgen = "^0.2.76"
 hex = "0.4.3"
 serde_repr = "0.1"
+async-trait = "0.1.51"
+wasm-bindgen-futures = "0.4.28"
+worker-sys = "^0.0.2"
 
 macros = {path = "macros"}
 

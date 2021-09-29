@@ -3,7 +3,7 @@ use std::num::ParseIntError;
 use wasm_bindgen::JsCast;
 use web_sys::ServiceWorkerGlobalScope;
 use worker::console_log;
-use worker::wasm_bindgen_futures::JsFuture;
+use wasm_bindgen_futures::JsFuture;
 
 pub struct JsCtx {
     ctx: ServiceWorkerGlobalScope,
