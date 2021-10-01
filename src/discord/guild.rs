@@ -45,14 +45,8 @@ impl Requestable for GuildRequest {
     fn ratelimit_bucket(&self) -> String {
         match self {
             GuildRequest::GetGuild{guild} => format!("GET /guilds/{}", guild),
-            GuildRequest::ModifyGuild{guild} => {
-                let guild_id = guild.id;
-                format!("PATCH /guilds/{}", guild_id)
-            },
-            GuildRequest::DeleteGuild{guild} => {
-                let guild_id = guild.id;
-                format!("DELETE /guilds/{}", guild_id)
-            }
+            GuildRequest::ModifyGuild{guild} => format!("PATCH /guilds/{}", guild.id),
+            GuildRequest::DeleteGuild{guild} => format!("DELETE /guilds/{}", guild.id)
         }
     }
     fn build_request(&self) -> Request {
