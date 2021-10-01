@@ -43,4 +43,5 @@ macro_rules! build_uri {
     })
 }
 
+#[allow(unused_imports)]
 pub(crate) use build_uri;
