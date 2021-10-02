@@ -41,7 +41,7 @@ impl DurableObject for RateLimiter {
             let now = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH).unwrap().as_millis().try_into().unwrap();
             if reset > now { // Reset is in the future, therefore we have to wait
                 let timeout = reset - now;
-                console_log!("Rate limit exceeded on {}, waiting {} ms", req.url().unwrap(), timeout);
+                console_log!("Rate limit exceeded, waiting {} ms", timeout);
                 delay(&self.ctx, timeout).await;
             } else {
                 console_log!("Reset in past, proceeding anyways");
