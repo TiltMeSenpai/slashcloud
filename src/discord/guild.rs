@@ -7,6 +7,8 @@ use super::request::*;
 #[cfg(feature = "emoji")]
 use super::emoji::Emoji;
 
+use crate::WorkerEnv;
+
 #[derive(Deserialize,Serialize,Default)]
 #[serde(default)]
 pub struct Guild {
@@ -27,15 +29,15 @@ pub struct Guild {
 
 #[allow(dead_code)]
 impl Guild {
-    pub async fn get(env: &Env, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
+    pub async fn get(env: &WorkerEnv, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
         request(&GuildRequest::GetGuild{guild: id, with_counts}, env).await
     }
 
-    pub async fn update(env: &Env, guild: Self) -> DiscordResponse<Self> {
+    pub async fn update(env: &WorkerEnv, guild: Self) -> DiscordResponse<Self> {
         request(&GuildRequest::ModifyGuild{guild}, env).await
     }
     
-    pub async fn delete(env: &Env, guild: Self) -> DiscordResponse<()> {
+    pub async fn delete(env: &WorkerEnv, guild: Self) -> DiscordResponse<()> {
         request(&GuildRequest::DeleteGuild{guild}, env).await
     }
 }

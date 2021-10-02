@@ -2,6 +2,7 @@ use worker::{Fetch, Headers};
 pub use worker::{Request, RequestInit, Method, Env};
 use std::time;
 use std::str::FromStr;
+use crate::WorkerEnv;
 
 pub trait Requestable {
     fn ratelimit_bucket(&self) -> String;
@@ -43,8 +44,9 @@ pub enum DiscordResponse<T> {
 
 #[allow(dead_code)]
 #[cfg(feature = "ratelimit")]
-pub async fn request<T, R>(req: &T, env: &Env) -> DiscordResponse<R> where T: Requestable, R: serde::de::DeserializeOwned
+pub async fn request<T, R>(req: &T, w_env: &WorkerEnv) -> DiscordResponse<R> where T: Requestable, R: serde::de::DeserializeOwned
 {
+    let env = w_env.as_ref();
     let mut request = req.build_request();
     let token = match env.secret("DISCORD_TOKEN") {
         Ok(token) => token,
