@@ -87,8 +87,7 @@ where
                 } => match req.data.to_owned() {
                     Some(arg_val) => match T::from_value(&arg_val) {
                         Some(args) => {
-                            let handler = C::new_command(env, args, req);
-                            worker::Response::from_json(&handler.handle_command().await)
+                            worker::Response::from_json(&C::handle_command(env, args, req).await)
                         },
                         None => worker::Response::error("Could not deserialize args", 400),
                     },

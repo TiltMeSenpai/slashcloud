@@ -14,23 +14,17 @@ pub trait CommandOption: Sized {
 
 #[async_trait(?Send)]
 pub trait CommandHandler<T> where T: CommandOption{
-    fn new_command(env: Env, command: T, req: InteractionRequest) -> Self;
-    async fn handle_command(&self) -> InteractionResponse;
+    async fn handle_command(env: Env, command: T, req: InteractionRequest) -> InteractionResponse;
 }
 
 #[async_trait(?Send)]
 pub trait InteractionHandler<T> {
-    fn new_interaction(env: Env, interaction: T, req: InteractionRequest) -> Self;
-    async fn handle_interaction(&mut self) -> InteractionResponse;
+    async fn handle_interaction(env: Env, req: InteractionRequest) -> InteractionResponse;
 }
 
 #[async_trait(?Send)]
 impl<T, R> InteractionHandler<R> for T where T: CommandHandler<R>, R: CommandOption {
-    fn new_interaction(env: Env, interaction: R, req: InteractionRequest) -> Self {
-        T::new_command(env, interaction, req)
-    }
-
-    async fn handle_interaction(&mut self) -> InteractionResponse {
+    async fn handle_interaction(_env: Env, _req: InteractionRequest) -> InteractionResponse {
         InteractionResponse::update()
     }
 }
