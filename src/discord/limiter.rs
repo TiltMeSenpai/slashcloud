@@ -45,9 +45,9 @@ impl DurableObject for RateLimiter {
             Ok(resp) => {
                 let headers = resp.headers();
                 let new_reset: i32 = headers.get("x-ratelimit-reset").unwrap().unwrap_or_default().parse().unwrap_or_default();
-                let _reset = self.storage.put("reset", new_reset).await;
+                let _reset = self.storage.put("reset", new_reset).await.unwrap();
                 let new_remaining: i32 = headers.get("x-ratelimit-remaining").unwrap().unwrap_or_default().parse().unwrap_or_default();
-                let _storage = self.storage.put("remaining", new_remaining).await;
+                let _storage = self.storage.put("remaining", new_remaining).await.unwrap();
                 Ok(resp)
             }
             err => err
