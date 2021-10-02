@@ -25,7 +25,7 @@ pub trait InteractionHandler<T> {
 }
 
 #[async_trait(?Send)]
-impl<T, R> InteractionHandler<R> for T where T: CommandHandler<R> + Send + Sync, R: CommandOption {
+impl<T, R> InteractionHandler<R> for T where T: CommandHandler<R>, R: CommandOption {
     fn new_interaction(env: Env, interaction: R, req: InteractionRequest) -> Self {
         T::new_command(env, interaction, req)
     }
