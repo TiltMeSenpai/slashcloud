@@ -81,7 +81,7 @@ where
                     ..
                 } => match req.data.to_owned() {
                     Some(arg_val) => match T::from_value(&arg_val) {
-                        Some(args) => worker::Response::from_json(&args.handle(req)),
+                        Some(args) => worker::Response::from_json(&args.handle(req, &env)),
                         None => worker::Response::error("Could not deserialize args", 400),
                     },
                     None => worker::Response::error("Missing args", 400),

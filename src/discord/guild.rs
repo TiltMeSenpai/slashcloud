@@ -27,15 +27,15 @@ pub struct Guild {
 
 #[allow(dead_code)]
 impl Guild {
-    async fn get(env: Env, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
+    async fn get(env: &Env, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
         request(&GuildRequest::GetGuild{guild: id, with_counts}, env).await
     }
 
-    async fn update(env: Env, guild: Self) -> DiscordResponse<Self> {
+    async fn update(env: &Env, guild: Self) -> DiscordResponse<Self> {
         request(&GuildRequest::ModifyGuild{guild}, env).await
     }
     
-    async fn delete(env: Env, guild: Self) -> DiscordResponse<()> {
+    async fn delete(env: &Env, guild: Self) -> DiscordResponse<()> {
         request(&GuildRequest::DeleteGuild{guild}, env).await
     }
 }

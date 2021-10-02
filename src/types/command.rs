@@ -1,6 +1,7 @@
 use serde_json::Value;
 
 use crate::types::interactions::*;
+use worker::Env;
 
 pub use macros::CommandOption;
 
@@ -11,15 +12,15 @@ pub trait CommandOption: Sized {
 }
 
 pub trait CommandHandler {
-    fn handle(&self, req: InteractionRequest) -> InteractionResponse;
+    fn handle(&self, req: InteractionRequest, env: &Env) -> InteractionResponse;
 }
 
 pub trait InteractionHandler {
-    fn handle_request(&self, req: InteractionRequest) -> InteractionResponse;
+    fn handle_request(&self, req: InteractionRequest, env: &Env) -> InteractionResponse;
 }
 
 impl<T> InteractionHandler for T {
-    fn handle_request(&self, _req: InteractionRequest) -> InteractionResponse {
+    fn handle_request(&self, _req: InteractionRequest, _env: &Env) -> InteractionResponse {
         InteractionResponse::update()
     }
 }

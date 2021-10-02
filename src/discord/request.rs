@@ -43,7 +43,7 @@ pub enum DiscordResponse<T> {
 
 #[allow(dead_code)]
 #[cfg(feature = "ratelimit")]
-pub async fn request<T, R>(req: &T, env: Env) -> DiscordResponse<R> where T: Requestable, R: serde::de::DeserializeOwned
+pub async fn request<T, R>(req: &T, env: &Env) -> DiscordResponse<R> where T: Requestable, R: serde::de::DeserializeOwned
 {
     let mut request = req.build_request();
     let token = match env.secret("DISCORD_TOKEN") {
