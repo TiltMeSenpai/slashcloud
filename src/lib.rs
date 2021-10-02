@@ -10,6 +10,7 @@ mod types;
 mod utils;
 pub mod discord;
 pub use types::*;
+pub use discord::DiscordResponse;
 
 #[macro_use]
 #[allow(unused_imports)]

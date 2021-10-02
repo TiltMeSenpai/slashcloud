@@ -20,6 +20,7 @@ mod guild;
 mod channel;
 
 pub use snowflake::Snowflake;
+pub use request::DiscordResponse;
 
 #[cfg(feature = "user")]
 pub use user::User;
