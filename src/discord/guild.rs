@@ -27,8 +27,8 @@ pub struct Guild {
 
 #[allow(dead_code)]
 impl Guild {
-    async fn get(env: Env, id: Snowflake) -> DiscordResponse<Self> {
-        request(&GuildRequest::GetGuild{guild: id}, env).await
+    async fn get(env: Env, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
+        request(&GuildRequest::GetGuild{guild: id, with_counts}, env).await
     }
 
     async fn update(env: Env, guild: Self) -> DiscordResponse<Self> {
@@ -42,7 +42,7 @@ impl Guild {
 
 #[allow(dead_code)]
 enum GuildRequest {
-    GetGuild {guild: Snowflake},
+    GetGuild {guild: Snowflake, with_counts: bool},
     ModifyGuild {guild: Guild},
     DeleteGuild {guild: Guild}
 }
@@ -50,14 +50,14 @@ enum GuildRequest {
 impl Requestable for GuildRequest {
     fn ratelimit_bucket(&self) -> String {
         match self {
-            GuildRequest::GetGuild{guild} => format!("GET /guilds/{}", guild),
+            GuildRequest::GetGuild{guild, ..} => format!("GET /guilds/{}", guild),
             GuildRequest::ModifyGuild{guild} => format!("PATCH /guilds/{}", guild.id),
             GuildRequest::DeleteGuild{guild} => format!("DELETE /guilds/{}", guild.id)
         }
     }
     fn build_request(&self) -> Request {
         match self {
-            GuildRequest::GetGuild{guild} => Request::new(&build_uri!("/guilds/{}", guild), Method::Get),
+            GuildRequest::GetGuild{guild, with_counts} => Request::new(&build_uri!("/guilds/{}?with_counts={}", guild, with_counts), Method::Get),
             GuildRequest::ModifyGuild{guild} => Request::new_with_init(&build_uri!("/guilds/{}", guild.id), &RequestInit {
                 body: Some(serde_wasm_bindgen::to_value(guild).unwrap()),
                 method: Method::Patch,
