@@ -38,6 +38,7 @@ impl DurableObject for RateLimiter {
         let reset: i32 = self.storage.get("reset").await.unwrap_or_default();
         console_log!("Remaining requests: {}, resetting at {}", remaining, reset);
         if remaining < 1 {
+            console_log!("Limits exceeded, Delaying request");
             let now = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH).unwrap().as_millis().try_into().unwrap();
             if reset > now { // Reset is in the future, therefore we have to wait
                 let timeout = reset - now;
