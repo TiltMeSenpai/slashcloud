@@ -35,15 +35,15 @@ impl DurableObject for RateLimiter {
     async fn fetch(&mut self, static_req: Request) -> worker::Result<Response> {
         let mut req = static_req.clone().unwrap();
         let remaining: u32 = self.storage.get("remaining").await.unwrap_or_default();
-        let reset: i32 = self.storage.get("reset").await.unwrap_or_default();
+        let reset: u64 = self.storage.get("reset").await.unwrap_or_default();
         console_log!("Remaining requests: {}, resetting at {}", remaining, reset);
         if remaining < 1 {
             console_log!("Limits exceeded, Delaying request");
-            let now = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH).unwrap().as_millis().try_into().unwrap();
+            let now: u64 = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH).unwrap().as_millis().try_into().unwrap();
             if reset > now { // Reset is in the future, therefore we have to wait
                 let timeout = reset - now;
                 console_log!("Rate limit exceeded, waiting {} ms", timeout);
-                delay(&self.ctx, timeout).await;
+                delay(&self.ctx, timeout.try_into().unwrap()).await;
             } else {
                 console_log!("Reset in past, proceeding anyways");
             }
