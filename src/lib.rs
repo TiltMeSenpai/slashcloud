@@ -50,9 +50,11 @@ where
         })
 }
 
-pub async fn handle_request<T>(mut req: Request, env: Env) -> Result<Response>
+pub async fn handle_request<T, C, R>(mut req: Request, env: Env) -> Result<Response>
 where
-    T: CommandOption + CommandHandler + InteractionHandler,
+    T: CommandOption,
+    C: CommandHandler<T>,
+    R: InteractionHandler<T>
 {
     let body = req.text().await.unwrap();
     let ctx = utils::JsCtx::new();
@@ -83,7 +85,10 @@ where
                     ..
                 } => match req.data.to_owned() {
                     Some(arg_val) => match T::from_value(&arg_val) {
-                        Some(args) => worker::Response::from_json(&args.handle(req, &WorkerEnv::new(env)).await),
+                        Some(args) => {
+                            let handler = C::new_command(env, args, req);
+                            worker::Response::from_json(&handler.handle_command().await)
+                        },
                         None => worker::Response::error("Could not deserialize args", 400),
                     },
                     None => worker::Response::error("Missing args", 400),

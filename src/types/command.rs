@@ -1,30 +1,10 @@
 use serde_json::Value;
 use async_trait::async_trait;
-
-use crate::types::interactions::*;
 use worker::Env;
 
+use crate::types::interactions::*;
+
 pub use macros::CommandOption;
-
-#[repr(transparent)]
-pub struct WorkerEnv(Env);
-
-unsafe impl Send for WorkerEnv {}
-unsafe impl Sync for WorkerEnv {}
-
-impl AsRef<Env> for WorkerEnv {
-    fn as_ref(&self) -> &Env {
-        match self {
-            WorkerEnv(env) => env
-        }
-    }
-}
-
-impl WorkerEnv {
-    pub fn new(env: Env) -> Self {
-        WorkerEnv(env)
-    }
-}
 
 pub trait CommandOption: Sized {
     fn from_value(options: &Value) -> Option<Self>;
@@ -33,18 +13,24 @@ pub trait CommandOption: Sized {
 }
 
 #[async_trait]
-pub trait CommandHandler {
-    async fn handle(&self, req: InteractionRequest, env: &WorkerEnv) -> InteractionResponse;
+pub trait CommandHandler<T> where T: CommandOption{
+    fn new_command(env: Env, command: T, req: InteractionRequest) -> Self;
+    async fn handle_command(&self) -> InteractionResponse;
 }
 
-#[async_trait]
-pub trait InteractionHandler {
-    async fn handle_request(&self, req: InteractionRequest, env: &WorkerEnv) -> InteractionResponse;
+#[async_trait(?Send)]
+pub trait InteractionHandler<T> {
+    fn new_interaction(env: Env, interaction: T, req: InteractionRequest) -> Self;
+    async fn handle_interaction(&mut self) -> InteractionResponse;
 }
 
-#[async_trait]
-impl<T> InteractionHandler for T where T: Send + Sync {
-    async fn handle_request(&self, _req: InteractionRequest, _env: &WorkerEnv) -> InteractionResponse {
+#[async_trait(?Send)]
+impl<T, R> InteractionHandler<R> for T where T: CommandHandler<R> + Send + Sync, R: CommandOption {
+    fn new_interaction(env: Env, interaction: R, req: InteractionRequest) -> Self {
+        T::new_command(env, interaction, req)
+    }
+
+    async fn handle_interaction(&mut self) -> InteractionResponse {
         InteractionResponse::update()
     }
 }
