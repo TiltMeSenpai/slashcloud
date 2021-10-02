@@ -15,6 +15,8 @@ pub use types::*;
 #[allow(unused_imports)]
 extern crate macros;
 
+pub use async_trait::async_trait;
+
 pub use command::*;
 pub use interactions::*;
 pub use serde_json::json;
