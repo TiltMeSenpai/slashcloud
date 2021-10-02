@@ -12,19 +12,19 @@ use super::emoji::Emoji;
 #[derive(Deserialize,Serialize,Default)]
 #[serde(default)]
 pub struct Guild {
-    id: Snowflake,
-    name: String,
-    icon: Option<String>,
-    splash: Option<String>,
-    discovery_splash: Option<String>,
+    pub id: Snowflake,
+    pub name: String,
+    pub icon: Option<String>,
+    pub splash: Option<String>,
+    pub discovery_splash: Option<String>,
     #[cfg(feature = "emoji")]
-    emojis: Vec<Emoji>,
-    features: Vec<String>,
-    approximate_member_count: u64,
-    approximate_presence_count: u64,
-    description: String,
+    pub emojis: Vec<Emoji>,
+    pub features: Vec<String>,
+    pub approximate_member_count: u64,
+    pub approximate_presence_count: u64,
+    pub description: String,
     #[serde(flatten, skip_serializing)]
-    extra: HashMap<String, serde_json::Value>
+    pub extra: HashMap<String, serde_json::Value>
 }
 
 #[allow(dead_code)]
