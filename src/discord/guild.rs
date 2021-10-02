@@ -1,8 +1,11 @@
+use serde::{Serialize, Deserialize};
+use std::collections::HashMap;
+
 use super::snowflake::Snowflake;
 use super::request::*;
-use serde::{Serialize, Deserialize};
 
-type Emoji = Snowflake;
+#[cfg(feature = "emoji")]
+use super::emoji::Emoji;
 
 #[derive(Deserialize,Serialize,Default)]
 #[serde(default)]
@@ -12,11 +15,14 @@ pub struct Guild {
     icon: Option<String>,
     splash: Option<String>,
     discovery_splash: Option<String>,
+    #[cfg(feature = "emoji")]
     emojis: Vec<Emoji>,
     features: Vec<String>,
     approximate_member_count: u64,
     approximate_presence_count: u64,
-    description: String
+    description: String,
+    #[serde(flatten, skip_serializing)]
+    extra: HashMap<String, serde_json::Value>
 }
 
 #[allow(dead_code)]
