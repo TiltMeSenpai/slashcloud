@@ -3,6 +3,7 @@ use serde::ser::{SerializeStruct, Serializer};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_repr::{Deserialize_repr, Serialize_repr};
+use crate::discord::Snowflake;
 
 #[allow(dead_code)]
 #[derive(Serialize_repr, PartialEq)]
@@ -18,7 +19,7 @@ pub enum ButtonStyle {
 #[derive(Serialize)]
 pub struct ButtonEmoji {
     name: String,
-    id: String,
+    id: Snowflake,
     animated: bool,
 }
 
@@ -277,9 +278,9 @@ pub struct InteractionRequest {
     #[serde(rename = "type")]
     pub t: InteractionRequestType,
     pub id: String,
-    pub application_id: Option<String>,
-    pub guild_id: Option<String>,
-    pub channel_id: Option<String>,
+    pub application_id: Option<Snowflake>,
+    pub guild_id: Option<Snowflake>,
+    pub channel_id: Option<Snowflake>,
     #[serde(alias = "member")]
     pub user: Option<Value>,
     pub data: Option<Value>,
