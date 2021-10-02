@@ -12,7 +12,7 @@ pub trait CommandOption: Sized {
     fn to_value() -> Value;
 }
 
-#[async_trait]
+#[async_trait(?Send)]
 pub trait CommandHandler<T> where T: CommandOption{
     fn new_command(env: Env, command: T, req: InteractionRequest) -> Self;
     async fn handle_command(&self) -> InteractionResponse;
