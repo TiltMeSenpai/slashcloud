@@ -36,6 +36,7 @@ impl DurableObject for RateLimiter {
         let mut req = static_req.clone().unwrap();
         let remaining: u32 = self.storage.get("remaining").await.unwrap_or_default();
         let reset: i32 = self.storage.get("reset").await.unwrap_or_default();
+        console_log!("Remaining requests: {}, resetting at {}", remaining, reset);
         if remaining < 1 {
             let now = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH).unwrap().as_millis().try_into().unwrap();
             if reset > now { // Reset is in the future, therefore we have to wait
