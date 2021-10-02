@@ -8,11 +8,17 @@ edition = "2018"
 crate-type = ["cdylib", "rlib"]
 
 [features]
-default = ["ratelimit"]
+default = ["discord"]
 # Keep command to json in wasm targets (Normally removed for binary size)
 keep_json = []
-discord = []
+discord = ["ratelimit"]
 ratelimit = []
+channel = ["discord"]
+emoji = ["discord"]
+guild = ["discord"]
+message = ["discord"]
+role = ["discord"]
+user = ["discord"]
 
 [dependencies]
 worker = "^0.0.6"
