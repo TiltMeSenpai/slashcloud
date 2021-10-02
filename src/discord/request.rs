@@ -25,6 +25,7 @@ fn ratelimit_from_headers(headers: &Headers) -> RateLimitInfo {
     }
 }
 
+#[allow(dead_code)]
 pub struct RateLimitInfo {
     remaining: u32,
     limit: u32,
@@ -51,8 +52,8 @@ pub async fn request<T, R>(req: &T, env: Env) -> DiscordResponse<R> where T: Req
             return DiscordResponse::MissingTokenError;
         }
     };
-    let mut headers = request.headers_mut().unwrap();
-    headers.set("Authorization", format!("Bot {}", token.to_string())).unwrap();
+    let headers = request.headers_mut().unwrap();
+    headers.set("Authorization", &format!("Bot {}", token.to_string())).unwrap();
     let resp = if cfg!(feature = "ratelimit") {
         let obj = env.durable_object("DISCORD_RATELIMITER").unwrap();
         let limit = obj.id_from_name(&req.ratelimit_bucket()).unwrap().get_stub().unwrap();
