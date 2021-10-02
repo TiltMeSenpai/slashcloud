@@ -1,10 +1,12 @@
 use js_sys::Promise;
 use web_sys::ServiceWorkerGlobalScope;
 use wasm_bindgen::JsCast;
-use std::time;
 use std::convert::TryInto;
 use wasm_bindgen_futures::JsFuture;
 use worker::*;
+
+extern crate console_error_panic_hook;
+use console_error_panic_hook::set_once as panic_hook;
 
 async fn delay(ctx: &ServiceWorkerGlobalScope, mils: i32) {
     let _res = JsFuture::from(Promise::new(&mut | resolve, _reject | {
@@ -23,6 +25,7 @@ pub struct RateLimiter {
 #[durable_object]
 impl DurableObject for RateLimiter {
     fn new(state: State, env: Env) -> Self {
+        panic_hook();
         let token = env.secret("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN secret").to_string();
         let storage = state.storage();
         RateLimiter {
@@ -32,14 +35,14 @@ impl DurableObject for RateLimiter {
         }
     }
 
-    async fn fetch(&mut self, static_req: Request) -> worker::Result<Response> {
-        let mut req = static_req.clone().unwrap();
+    async fn fetch(&mut self, mut incoming: Request) -> worker::Result<Response> {
+        let path = incoming.path();
         let remaining: u32 = self.storage.get("remaining").await.unwrap_or_default();
         let reset: u64 = self.storage.get("reset").await.unwrap_or_default();
         console_log!("Remaining requests: {}, resetting at {}", remaining, reset);
         if remaining < 1 {
             console_log!("Limits exceeded, Delaying request");
-            let now: u64 = time::SystemTime::now().duration_since(time::SystemTime::UNIX_EPOCH).unwrap().as_millis().try_into().unwrap();
+            let now = Date::now().as_millis();
             if reset > now { // Reset is in the future, therefore we have to wait
                 let timeout = reset - now;
                 console_log!("Rate limit exceeded, waiting {} ms", timeout);
@@ -48,8 +51,18 @@ impl DurableObject for RateLimiter {
                 console_log!("Reset in past, proceeding anyways");
             }
         }
-        let headers = req.headers_mut().unwrap();
+
+        console_log!("Preparing request");
+        let mut headers = Headers::new();
         headers.set("Authorization", &format!("Bot {}", self.token)).unwrap();
+        headers.set("Content-Type", "application/json").unwrap();
+
+        let body = incoming.text().await.ok().map(|value| wasm_bindgen::JsValue::from_str(&value));
+
+        let req = Request::new_with_init(&format!("https://discord.com/api/v9{}", path), &RequestInit{
+            body: body,
+            ..Default::default()
+        }).unwrap();
         let fetch = Fetch::Request(req);
         console_log!("Sending request");
         match fetch.send().await {

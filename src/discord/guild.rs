@@ -59,13 +59,13 @@ impl Requestable for GuildRequest {
     }
     fn build_request(&self) -> Request {
         match self {
-            GuildRequest::GetGuild{guild, with_counts} => Request::new(&build_uri!("/guilds/{}?with_counts={}", guild, with_counts), Method::Get),
-            GuildRequest::ModifyGuild{guild} => Request::new_with_init(&build_uri!("/guilds/{}", guild.id), &RequestInit {
+            GuildRequest::GetGuild{guild, with_counts} => Request::new(&format!("/guilds/{}?with_counts={}", guild, with_counts), Method::Get),
+            GuildRequest::ModifyGuild{guild} => Request::new_with_init(&format!("/guilds/{}", guild.id), &RequestInit {
                 body: Some(serde_wasm_bindgen::to_value(guild).unwrap()),
                 method: Method::Patch,
                 ..Default::default()
             }),
-            GuildRequest::DeleteGuild{guild} => Request::new(&build_uri!("/guilds/{}", guild.id), Method::Delete)
+            GuildRequest::DeleteGuild{guild} => Request::new(&format!("/guilds/{}", guild.id), Method::Delete)
         }.unwrap()
     }
 }

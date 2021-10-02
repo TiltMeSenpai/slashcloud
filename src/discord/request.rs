@@ -56,13 +56,3 @@ pub async fn request<T, R>(req: &T, limiter: ObjectNamespace) -> DiscordResponse
         Err(err) => DiscordResponse::WorkerError(err)
     }
 }
-
-#[macro_export]
-macro_rules! build_uri {
-    ($($arg:tt)+) => ({
-        format!("https://discord.com/api/v9{}", format!($($arg)+))
-    })
-}
-
-#[allow(unused_imports)]
-pub(crate) use build_uri;
