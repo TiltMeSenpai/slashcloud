@@ -89,7 +89,10 @@ where
                         Some(args) => {
                             worker::Response::from_json(&C::handle_command(env, args, req).await)
                         },
-                        None => worker::Response::error("Could not deserialize args", 400),
+                        None => {
+                            console_log!("Error deserializing args. JSON: {:?}", &arg_val);
+                            worker::Response::error("Could not deserialize args", 400)
+                        }
                     },
                     None => worker::Response::error("Missing args", 400),
                 },
