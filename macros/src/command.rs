@@ -289,8 +289,8 @@ pub fn derive_command_handler(ast: DeriveInput) -> TokenStream {
             impl CommandOption for #name {
                 fn from_value(options: &serde_json::Value) -> Option<Self>{
                     let args = std::collections::HashMap::<&str, &serde_json::Value, std::collections::hash_map::RandomState>::from_iter(
-                        options.get("options")?
-                        .as_array()?
+                        options["options"]
+                        .as_array().unwrap_or_default()
                         .iter().map(|option| (option["name"].as_str().unwrap(), &option["value"])));
 
                     match options["name"].as_str().unwrap() {
