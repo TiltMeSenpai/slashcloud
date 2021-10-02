@@ -1,4 +1,5 @@
 use serde_json::Value;
+use async_trait::async_trait;
 
 use crate::types::interactions::*;
 use worker::Env;
@@ -11,8 +12,9 @@ pub trait CommandOption: Sized {
     fn to_value() -> Value;
 }
 
+#[async_trait]
 pub trait CommandHandler {
-    fn handle(&self, req: InteractionRequest, env: &Env) -> InteractionResponse;
+    async fn handle(&self, req: InteractionRequest, env: &Env) -> InteractionResponse;
 }
 
 pub trait InteractionHandler {
