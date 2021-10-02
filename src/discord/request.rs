@@ -27,10 +27,10 @@ fn ratelimit_from_headers(headers: &Headers) -> RateLimitInfo {
 
 #[allow(dead_code)]
 pub struct RateLimitInfo {
-    remaining: u32,
-    limit: u32,
-    reset: time::SystemTime,
-    bucket: String
+    pub remaining: u32,
+    pub limit: u32,
+    pub reset: time::SystemTime,
+    pub bucket: String
 }
 
 pub enum DiscordResponse<T> {
