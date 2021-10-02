@@ -1,6 +1,8 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 
+use worker::ObjectNamespace;
+
 use super::snowflake::Snowflake;
 use super::request::*;
 
@@ -27,16 +29,16 @@ pub struct Guild {
 
 #[allow(dead_code)]
 impl Guild {
-    pub async fn get(env: &Env, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
-        request(&GuildRequest::GetGuild{guild: id, with_counts}, env).await
+    pub async fn get(limiter: ObjectNamespace, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
+        request(&GuildRequest::GetGuild{guild: id, with_counts}, limiter).await
     }
 
-    pub async fn update(env: &Env, guild: Self) -> DiscordResponse<Self> {
-        request(&GuildRequest::ModifyGuild{guild}, env).await
+    pub async fn update(limiter: ObjectNamespace, guild: Self) -> DiscordResponse<Self> {
+        request(&GuildRequest::ModifyGuild{guild}, limiter).await
     }
     
-    pub async fn delete(env: &Env, guild: Self) -> DiscordResponse<()> {
-        request(&GuildRequest::DeleteGuild{guild}, env).await
+    pub async fn delete(limiter: ObjectNamespace, guild: Self) -> DiscordResponse<()> {
+        request(&GuildRequest::DeleteGuild{guild}, limiter).await
     }
 }
 

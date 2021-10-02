@@ -1,5 +1,5 @@
-use worker::{Fetch, Headers};
-pub use worker::{Request, RequestInit, Method, Env};
+use worker::{Headers, ObjectNamespace};
+pub use worker::{Request, RequestInit, Method};
 use std::time;
 use std::str::FromStr;
 
@@ -34,7 +34,6 @@ pub struct RateLimitInfo {
 }
 
 pub enum DiscordResponse<T> {
-    MissingTokenError,
     WorkerError(worker::Error),
     RequestError(serde_json::Value),
     ServerError(serde_json::Value),
@@ -43,26 +42,11 @@ pub enum DiscordResponse<T> {
 
 #[allow(dead_code)]
 #[cfg(feature = "ratelimit")]
-pub async fn request<T, R>(req: &T, env: &Env) -> DiscordResponse<R> where T: Requestable, R: serde::de::DeserializeOwned
+pub async fn request<T, R>(req: &T, limiter: ObjectNamespace) -> DiscordResponse<R> where T: Requestable, R: serde::de::DeserializeOwned
 {
-    let mut request = req.build_request();
-    let token = match env.secret("DISCORD_TOKEN") {
-        Ok(token) => token,
-        Err(_) => {
-            return DiscordResponse::MissingTokenError;
-        }
-    };
-    let headers = request.headers_mut().unwrap();
-    headers.set("Authorization", &format!("Bot {}", token.to_string())).unwrap();
-    let resp = if cfg!(feature = "ratelimit") {
-        let obj = env.durable_object("DISCORD_RATELIMITER").unwrap();
-        let limit = obj.id_from_name(&req.ratelimit_bucket()).unwrap().get_stub().unwrap();
-        limit.fetch_with_request(request).await
-    }
-    else {
-        let r = Fetch::Request(request);
-        r.send().await
-    };
+    let request = req.build_request();
+    let limit = limiter.id_from_name(&req.ratelimit_bucket()).unwrap().get_stub().unwrap();
+    let resp = limit.fetch_with_request(request).await;
     match resp {
         Ok(mut r) => match r.status_code() {
             200..=299 => DiscordResponse::Ok(r.json().await.unwrap(), ratelimit_from_headers(r.headers())),

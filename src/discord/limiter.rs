@@ -16,20 +16,24 @@ async fn delay(ctx: &ServiceWorkerGlobalScope, mils: i32) {
 #[durable_object]
 pub struct RateLimiter {
     ctx: ServiceWorkerGlobalScope,
+    token: String,
     storage: Storage
 }
 
 #[durable_object]
 impl DurableObject for RateLimiter {
-    fn new(state: State, _env: Env) -> Self {
+    fn new(state: State, env: Env) -> Self {
+        let token = env.secret("DISCORD_TOKEN").expect("Missing DISCORD_TOKEN secret").to_string();
         let storage = state.storage();
         RateLimiter {
             ctx: js_sys::global().dyn_into().unwrap(),
+            token,
             storage
         }
     }
 
-    async fn fetch(&mut self, req: Request) -> worker::Result<Response> {
+    async fn fetch(&mut self, static_req: Request) -> worker::Result<Response> {
+        let mut req = static_req.clone().unwrap();
         let remaining: u32 = self.storage.get("remaining").await.unwrap_or_default();
         let reset: i32 = self.storage.get("reset").await.unwrap_or_default();
         if remaining < 1 {
@@ -40,6 +44,8 @@ impl DurableObject for RateLimiter {
                 delay(&self.ctx, timeout).await;
             }
         }
+        let headers = req.headers_mut().unwrap();
+        headers.set("Authorization", &format!("Bot {}", self.token)).unwrap();
         let fetch = Fetch::Request(req);
         match fetch.send().await {
             Ok(resp) => {
