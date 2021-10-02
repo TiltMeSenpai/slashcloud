@@ -8,7 +8,7 @@ use types::interactions::*;
 
 mod types;
 mod utils;
-mod discord;
+pub mod discord;
 pub use types::*;
 
 #[macro_use]
