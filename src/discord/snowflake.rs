@@ -1,2 +1,2 @@
 #[allow(dead_code)]
-pub type Snowflake = u64;
+pub type Snowflake = String;
