@@ -43,6 +43,8 @@ impl DurableObject for RateLimiter {
                 let timeout = reset - now;
                 console_log!("Rate limit exceeded on {}, waiting {} ms", req.url().unwrap(), timeout);
                 delay(&self.ctx, timeout).await;
+            } else {
+                console_log!("Reset in past, proceeding anyways");
             }
         }
         let headers = req.headers_mut().unwrap();
@@ -57,7 +59,10 @@ impl DurableObject for RateLimiter {
                 let _storage = self.storage.put("remaining", new_remaining).await.unwrap();
                 Ok(resp)
             }
-            err => err
+            err => {
+                console_log!("Error: {:?}", err);
+                err
+            }
         }
     }
 }
