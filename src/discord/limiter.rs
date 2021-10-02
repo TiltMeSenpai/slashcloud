@@ -50,6 +50,7 @@ impl DurableObject for RateLimiter {
         let headers = req.headers_mut().unwrap();
         headers.set("Authorization", &format!("Bot {}", self.token)).unwrap();
         let fetch = Fetch::Request(req);
+        console_log!("Sending request");
         match fetch.send().await {
             Ok(resp) => {
                 let headers = resp.headers();
