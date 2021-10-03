@@ -36,7 +36,7 @@ impl DurableObject for RateLimiter {
     }
 
     async fn fetch(&mut self, mut incoming: Request) -> worker::Result<Response> {
-        let path = incoming.path();
+        let incoming_url = incoming.url().unwrap();
         let remaining: u32 = self.storage.get("remaining").await.unwrap_or_default();
         let reset: u64 = self.storage.get("reset").await.unwrap_or_default();
         console_log!("Remaining requests: {}, resetting at {}", remaining, reset);
@@ -52,24 +52,33 @@ impl DurableObject for RateLimiter {
             }
         }
 
-        console_log!("Preparing request");
         let mut headers = Headers::new();
         headers.set("Authorization", &format!("Bot {}", self.token)).unwrap();
         headers.set("Content-Type", "application/json").unwrap();
 
-        let body = incoming.text().await.ok().map(|value| wasm_bindgen::JsValue::from_str(&value));
-
-        let req = Request::new_with_init(&format!("https://discord.com/api/v9{}", path), &RequestInit{
-            body: body,
-            ..Default::default()
+        let body = incoming.text().await.ok().map( | val | if !val.is_empty() {
+            console_log!("Request body: {}", &val);
+            Some(wasm_bindgen::JsValue::from_str(&val))
+        } else {
+            None
         }).unwrap();
+        let url = format!("https://discord.com/api/v9{}?{}", incoming_url.path(), incoming_url.query().unwrap_or_default());
+        console_log!("Building request for {}", url);
+        let req = Request::from(worker_sys::request::Request::new_with_str_and_init(&url, &(&RequestInit{
+            method: incoming.method(),
+            body,
+            headers,
+            ..Default::default()
+        }).into()
+        ).unwrap());
         let fetch = Fetch::Request(req);
         console_log!("Sending request");
         match fetch.send().await {
             Ok(resp) => {
                 let headers = resp.headers();
-                let new_reset: i32 = headers.get("x-ratelimit-reset").unwrap().unwrap_or_default().parse().unwrap_or_default();
-                let _reset = self.storage.put("reset", new_reset).await.unwrap();
+                let new_reset = headers.get("x-ratelimit-reset").unwrap().unwrap_or_default().parse::<f64>().unwrap_or_default() * 1000.0;
+                console_log!("New reset: {}", new_reset);
+                let _reset = self.storage.put("reset", new_reset as u64).await.unwrap();
                 let new_remaining: i32 = headers.get("x-ratelimit-remaining").unwrap().unwrap_or_default().parse().unwrap_or_default();
                 let _storage = self.storage.put("remaining", new_remaining).await.unwrap();
                 Ok(resp)

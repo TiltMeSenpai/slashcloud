@@ -19,6 +19,9 @@ mod guild;
 #[cfg(feature = "channel")]
 mod channel;
 
+#[cfg(feature = "message")]
+mod message;
+
 pub use snowflake::Snowflake;
 pub use request::DiscordResponse;
 
@@ -33,3 +36,6 @@ pub use emoji::Emoji;
 
 #[cfg(feature = "guild")]
 pub use guild::Guild;
+
+#[cfg(feature = "message")]
+pub use message::Message;

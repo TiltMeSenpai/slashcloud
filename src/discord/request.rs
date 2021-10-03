@@ -8,8 +8,8 @@ pub trait Requestable {
     fn build_request(&self) -> worker::Request;
 }
 
-fn timestamp_to_time(t: i32) -> time::SystemTime {
-    time::UNIX_EPOCH + time::Duration::from_millis(t as u64)
+fn timestamp_to_time(t: f64) -> worker::Date {
+    worker::Date::new(worker::DateInit::Millis((t * 1000.0) as u64))
 }
 
 fn header_or_default<T>(headers: &Headers, key: &str) -> T where T: FromStr + Default {
@@ -29,7 +29,7 @@ fn ratelimit_from_headers(headers: &Headers) -> RateLimitInfo {
 pub struct RateLimitInfo {
     pub remaining: u32,
     pub limit: u32,
-    pub reset: time::SystemTime,
+    pub reset: worker::Date,
     pub bucket: String
 }
 
@@ -55,4 +55,8 @@ pub async fn request<T, R>(req: &T, limiter: ObjectNamespace) -> DiscordResponse
         },
         Err(err) => DiscordResponse::WorkerError(err)
     }
+}
+
+pub fn to_body<T>(body: &T) -> Option<wasm_bindgen::JsValue> where T: serde::Serialize{
+    serde_json::to_string(body).map(|val| wasm_bindgen::JsValue::from_str(&val)).ok()
 }
