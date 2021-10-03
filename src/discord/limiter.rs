@@ -55,7 +55,7 @@ impl DurableObject for RateLimiter {
         let mut headers = Headers::new();
         headers.set("Authorization", &format!("Bot {}", self.token)).unwrap();
         headers.set("Content-Type", "application/json").unwrap();
-        headers.set("User-Agent", format!("DiscordBot ({}, {})", env!("CARGO_PKG_HOMEPAGE"), env!("CARGO_PKG_VERSION"))).unwrap();
+        headers.set("User-Agent", &format!("DiscordBot ({}, {})", env!("CARGO_PKG_HOMEPAGE"), env!("CARGO_PKG_VERSION"))).unwrap();
 
         let body = incoming.text().await.ok().map( | val | if !val.is_empty() {
             console_log!("Request body: {}", &val);
