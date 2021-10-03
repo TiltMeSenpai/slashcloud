@@ -1,6 +1,5 @@
 use worker::{Headers, ObjectNamespace};
 pub use worker::{Request, RequestInit, Method};
-use std::time;
 use std::str::FromStr;
 
 pub trait Requestable {
@@ -57,6 +56,7 @@ pub async fn request<T, R>(req: &T, limiter: ObjectNamespace) -> DiscordResponse
     }
 }
 
+#[allow(dead_code)]
 pub fn to_body<T>(body: &T) -> Option<wasm_bindgen::JsValue> where T: serde::Serialize{
     serde_json::to_string(body).map(|val| wasm_bindgen::JsValue::from_str(&val)).ok()
 }
