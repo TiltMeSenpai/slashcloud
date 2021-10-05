@@ -61,7 +61,7 @@ impl Requestable for GuildRequest {
         match self {
             GuildRequest::GetGuild{guild, with_counts} => Request::new(&format!("/guilds/{}?with_counts={}", guild, with_counts), Method::Get),
             GuildRequest::ModifyGuild{guild} => Request::new_with_init(&format!("/guilds/{}", guild.id), &RequestInit {
-                body: Some(serde_wasm_bindgen::to_value(guild).unwrap()),
+                body: to_body(guild),
                 method: Method::Patch,
                 ..Default::default()
             }),
