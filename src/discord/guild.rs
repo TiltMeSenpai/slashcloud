@@ -1,7 +1,7 @@
 use serde::{Serialize, Deserialize};
 use std::collections::HashMap;
 
-use worker::ObjectNamespace;
+use worker::Env;
 
 use super::snowflake::Snowflake;
 use super::request::*;
@@ -29,16 +29,16 @@ pub struct Guild {
 
 #[allow(dead_code)]
 impl Guild {
-    pub async fn get(limiter: ObjectNamespace, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
-        request(&GuildRequest::GetGuild{guild: id, with_counts}, limiter).await
+    pub async fn get(env: Env, id: Snowflake, with_counts: bool) -> DiscordResponse<Self> {
+        request(&GuildRequest::GetGuild{guild: id, with_counts}, env).await
     }
 
-    pub async fn update(limiter: ObjectNamespace, guild: Self) -> DiscordResponse<Self> {
-        request(&GuildRequest::ModifyGuild{guild}, limiter).await
+    pub async fn update(env: Env, guild: Self) -> DiscordResponse<Self> {
+        request(&GuildRequest::ModifyGuild{guild}, env).await
     }
     
-    pub async fn delete(limiter: ObjectNamespace, guild: Self) -> DiscordResponse<()> {
-        request(&GuildRequest::DeleteGuild{guild}, limiter).await
+    pub async fn delete(env: Env, guild: Self) -> DiscordResponse<()> {
+        request(&GuildRequest::DeleteGuild{guild}, env).await
     }
 }
 
@@ -53,19 +53,29 @@ impl Requestable for GuildRequest {
     fn ratelimit_bucket(&self) -> String {
         match self {
             GuildRequest::GetGuild{guild, ..} => format!("GET /guilds/{}", guild),
-            GuildRequest::ModifyGuild{guild} => format!("PATCH /guilds/{}", guild.id),
-            GuildRequest::DeleteGuild{guild} => format!("DELETE /guilds/{}", guild.id)
+            GuildRequest::ModifyGuild{guild}  => format!("PATCH /guilds/{}", guild.id),
+            GuildRequest::DeleteGuild{guild}  => format!("DELETE /guilds/{}", guild.id)
         }
     }
+
     fn build_request(&self) -> Request {
         match self {
-            GuildRequest::GetGuild{guild, with_counts} => Request::new(&format!("/guilds/{}?with_counts={}", guild, with_counts), Method::Get),
-            GuildRequest::ModifyGuild{guild} => Request::new_with_init(&format!("/guilds/{}", guild.id), &RequestInit {
-                body: to_body(guild),
-                method: Method::Patch,
-                ..Default::default()
-            }),
-            GuildRequest::DeleteGuild{guild} => Request::new(&format!("/guilds/{}", guild.id), Method::Delete)
-        }.unwrap()
+            GuildRequest::GetGuild{guild, with_counts} =>
+                build_request!(
+                    ["/guilds/{}?with_counts={}", guild, with_counts],
+                    Method::Get
+                ),
+            GuildRequest::ModifyGuild{guild} => 
+                build_request!(
+                    ["/guilds/{}", guild.id],
+                    Method::Patch,
+                    guild
+                ),
+            GuildRequest::DeleteGuild{guild} => 
+                build_request!(
+                    ["/guilds/{}", guild.id],
+                    Method::Delete
+                )
+        }
     }
 }

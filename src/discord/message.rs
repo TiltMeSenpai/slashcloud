@@ -1,7 +1,7 @@
 use super::{Snowflake, DiscordResponse};
 use super::request::*;
 use serde::{Serialize, Deserialize};
-use worker::{Request, Method, ObjectNamespace};
+use worker::{Request, Method, Env};
 
 #[derive(Serialize, Default)]
 pub struct AllowedMentions {
@@ -25,20 +25,20 @@ pub struct Message {
 }
 
 impl Message {
-    pub async fn list(limiter: ObjectNamespace, channel: Snowflake) -> DiscordResponse<Vec<Message>> {
-        request(&MessageRequest::GetMessages(channel), limiter).await
+    pub async fn list(env: Env, channel: Snowflake) -> DiscordResponse<Vec<Message>> {
+        request(&MessageRequest::GetMessages(channel), env).await
     }
 
-    pub async fn create(limiter: ObjectNamespace, message: Message) -> DiscordResponse<Message> {
-        request(&MessageRequest::CreateMessage(message), limiter).await
+    pub async fn create(env: Env, message: Message) -> DiscordResponse<Message> {
+        request(&MessageRequest::CreateMessage(message), env).await
     }
 
-    pub async fn update(limiter: ObjectNamespace, message: Message) -> DiscordResponse<Message> {
-        request(&MessageRequest::UpdateMessage(message), limiter).await
+    pub async fn update(env: Env, message: Message) -> DiscordResponse<Message> {
+        request(&MessageRequest::UpdateMessage(message), env).await
     }
     
-    pub async fn delete(limiter: ObjectNamespace, message: Message) -> DiscordResponse<()> {
-        request(&MessageRequest::DeleteMessage(message), limiter).await
+    pub async fn delete(env: Env, message: Message) -> DiscordResponse<()> {
+        request(&MessageRequest::DeleteMessage(message), env).await
     }
 }
 
@@ -61,18 +61,28 @@ impl Requestable for MessageRequest {
 
     fn build_request(&self) -> Request {
         match self {
-            MessageRequest::GetMessages(channel) => Request::new(&format!("/channels/{}/messages", channel), Method::Get),
-            MessageRequest::CreateMessage(msg) => Request::new_with_init(&format!("/channels/{}/messages", msg.channel_id), &RequestInit{
-                body: to_body(msg),
-                method: Method::Post,
-                ..Default::default()
-            }),
-            MessageRequest::UpdateMessage(msg) => Request::new_with_init(&format!("/channels/{}/messages", msg.channel_id), &RequestInit{
-                body: to_body(msg),
-                method: Method::Patch,
-                ..Default::default()
-            }),
-            MessageRequest::DeleteMessage(msg) => Request::new(&format!("/channels/{}/messages/{}", msg.channel_id, msg.id), Method::Delete)
-        }.unwrap()
+            MessageRequest::GetMessages(channel) => 
+                build_request!(
+                    ["/channels/{}/messages", channel],
+                    Method::Get
+                ),
+            MessageRequest::CreateMessage(msg) => 
+                build_request!(
+                    ["/channels/{}/messages", msg.channel_id],
+                    Method::Post,
+                    msg
+                ),
+            MessageRequest::UpdateMessage(msg) => 
+                build_request!(
+                    ["/channels/{}/messages", msg.channel_id],
+                    Method::Patch,
+                    msg
+                ),
+            MessageRequest::DeleteMessage(msg) => 
+                build_request!(
+                    ["/channels/{}/messages/{}", msg.channel_id, msg.id],
+                    Method::Delete
+                )
+        }
     }
 }
