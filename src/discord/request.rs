@@ -34,14 +34,16 @@ pub struct RateLimitInfo {
     pub bucket: String
 }
 
-pub enum DiscordResponse<T> {
+
+pub enum DiscordError {
     #[cfg(feature = "ratelimit")]
     MissingLimiterError,
     WorkerError(worker::Error),
     RequestError(serde_json::Value),
-    ServerError(serde_json::Value),
-    Ok(T, RateLimitInfo)
+    ServerError(serde_json::Value)
 }
+
+pub type DiscordResponse<T> = Result<(T, RateLimitInfo), DiscordError>;
 
 #[allow(dead_code)]
 pub async fn request<T, R>(req: &T, env: Env) -> DiscordResponse<R> where T: Requestable, R: serde::de::DeserializeOwned
@@ -52,7 +54,7 @@ pub async fn request<T, R>(req: &T, env: Env) -> DiscordResponse<R> where T: Req
             let limit = limiter.id_from_name(&req.ratelimit_bucket()).unwrap().get_stub().unwrap();
             limit.fetch_with_request(request).await
         } else {
-            return DiscordResponse::MissingLimiterError;
+            return Err(DiscordError::MissingLimiterError);
         }
     } else {
         use worker::Fetch;
@@ -61,11 +63,11 @@ pub async fn request<T, R>(req: &T, env: Env) -> DiscordResponse<R> where T: Req
     };
     match resp {
         Ok(mut r) => match r.status_code() {
-            200..=299 => DiscordResponse::Ok(r.json().await.unwrap(), ratelimit_from_headers(r.headers())),
-            400..=499 => DiscordResponse::RequestError(r.json().await.unwrap()),
-            _ => DiscordResponse::ServerError(r.json().await.unwrap())
+            200..=299 => Ok((r.json().await.unwrap(), ratelimit_from_headers(r.headers()))),
+            400..=499 => Err(DiscordError::RequestError(r.json().await.unwrap())),
+            _ => Err(DiscordError::ServerError(r.json().await.unwrap()))
         },
-        Err(err) => DiscordResponse::WorkerError(err)
+        Err(err) => Err(DiscordError::WorkerError(err))
     }
 }
 
