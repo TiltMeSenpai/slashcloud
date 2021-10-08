@@ -1,7 +1,7 @@
 use super::{Snowflake, DiscordResponse};
 use super::request::*;
 use serde::{Serialize, Deserialize};
-use worker::{Request, Method, Env};
+use worker::{Request, Env};
 
 #[derive(Serialize, Default)]
 pub struct AllowedMentions {

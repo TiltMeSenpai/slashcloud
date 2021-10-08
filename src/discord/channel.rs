@@ -1,5 +1,4 @@
 use super::Snowflake;
-use super::request::*;
-use serde::{Serialize, Deserialize};
 
-type Channel = Snowflake;
+#[allow(dead_code)]
+pub type Channel = Snowflake;
