@@ -62,16 +62,16 @@ impl Requestable for GuildRequest {
         match self {
             GuildRequest::GetGuild{guild, with_counts} =>
                 build_request!(
-                    Get ["/guilds/{}?with_counts={}", guild, with_counts]
+                    Get {"/guilds/{}?with_counts={}", guild, with_counts}
                 ),
             GuildRequest::ModifyGuild{guild} => 
                 build_request!(
-                    Patch ["/guilds/{}", guild.id],
+                    Patch {"/guilds/{}", guild.id},
                     guild
                 ),
             GuildRequest::DeleteGuild{guild} => 
                 build_request!(
-                    Delete ["/guilds/{}", guild.id]
+                    Delete {"/guilds/{}", guild.id}
                 )
         }
     }

@@ -63,21 +63,21 @@ impl Requestable for MessageRequest {
         match self {
             MessageRequest::GetMessages(channel) => 
                 build_request!(
-                    Get ["/channels/{}/messages", channel]
+                    Get {"/channels/{}/messages", channel}
                 ),
             MessageRequest::CreateMessage(msg) => 
                 build_request!(
-                    Post ["/channels/{}/messages", msg.channel_id],
+                    Post {"/channels/{}/messages", msg.channel_id},
                     msg
                 ),
             MessageRequest::UpdateMessage(msg) => 
                 build_request!(
-                    Patch ["/channels/{}/messages", msg.channel_id],
+                    Patch {"/channels/{}/messages", msg.channel_id},
                     msg
                 ),
             MessageRequest::DeleteMessage(msg) => 
                 build_request!(
-                    Delete  ["/channels/{}/messages/{}", msg.channel_id, msg.id]
+                    Delete {"/channels/{}/messages/{}", msg.channel_id, msg.id}
                 )
         }
     }

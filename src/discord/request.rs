@@ -85,7 +85,7 @@ pub fn to_body<T>(body: &T) -> JsValue where T: serde::Serialize{
 
 #[allow(unused_macros)]
 macro_rules! build_request {
-    ($method:tt [$($path:expr),+], $body:expr) => {
+    ($method:tt {$($path:expr),+}, $body:expr) => {
         Request::new_with_init(&format!($($path),+),
             worker::RequestInit::new()
                 .with_method(worker::Method::$method)
