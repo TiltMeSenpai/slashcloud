@@ -48,19 +48,26 @@ pub type DiscordResponse<T> = Result<(T, RateLimitInfo), DiscordError>;
 #[allow(dead_code)]
 pub async fn request<T, R>(req: &T, env: Env) -> DiscordResponse<R> where T: Requestable, R: serde::de::DeserializeOwned
 {
+
     let request = req.build_request();
-    let resp = if cfg!(feature = "ratelimit"){
+
+    #[cfg(not(feature = "ratelimit"))]
+    let resp = {
+        use worker::Fetch;
+        let fetch = Fetch::Request(request);
+        fetch.send().await
+    };
+
+    #[cfg(feature = "ratelimit")]
+    let resp = {
         if let Ok(limiter) = env.durable_object("DISCORD_RATELIMITER"){
             let limit = limiter.id_from_name(&req.ratelimit_bucket()).unwrap().get_stub().unwrap();
             limit.fetch_with_request(request).await
         } else {
             return Err(DiscordError::MissingLimiterError);
         }
-    } else {
-        use worker::Fetch;
-        let fetch = Fetch::Request(request);
-        fetch.send().await
     };
+
     match resp {
         Ok(mut r) => match r.status_code() {
             200..=299 => Ok((r.json().await.unwrap(), ratelimit_from_headers(r.headers()))),
