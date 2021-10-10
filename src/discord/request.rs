@@ -92,7 +92,7 @@ macro_rules! build_request {
                 .with_body(Some(to_body($body)))
             ).unwrap()
     };
-    ($method:tt [$($path:expr),+]) => {
+    ($method:tt {$($path:expr),+}) => {
         Request::new(&format!($($path),+), worker::Method::$method).unwrap()
     }
 }
